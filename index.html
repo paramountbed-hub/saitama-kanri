@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>さいたま支店 案件管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase SDK (compat) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+  <!-- ヘッダー -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-title">
+        <span class="logo">📋 案件管理</span>
+        <span class="branch-tag">さいたま支店</span>
+      </div>
+      <button class="btn-add-main" onclick="openAddModal()">
+        ＋ 新規案件登録
+      </button>
+    </div>
+  </header>
+
+  <!-- 統計バー -->
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat-item total">
+        <span class="stat-num" id="statTotal">0</span>
+        <span class="stat-label">件（全体）</span>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat-item delay">
+        <span class="stat-num" id="statDelay">0</span>
+        <span class="stat-label">件 遅延</span>
+      </div>
+      <div class="stat-item warning">
+        <span class="stat-num" id="statWarning">0</span>
+        <span class="stat-label">件 注意</span>
+      </div>
+      <div class="stat-item done">
+        <span class="stat-num" id="statCompleted">0</span>
+        <span class="stat-label">件 完了</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 検索・フィルタバー -->
+  <div class="search-bar">
+    <div class="search-inner">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          id="searchInput"
+          class="search-input"
+          placeholder="病院名で検索..."
+        />
+      </div>
+      <select id="staffFilter" class="filter-select">
+        <option value="">全員表示</option>
+      </select>
+      <span class="count-label"><span id="projectCount">0 件</span>表示中</span>
+    </div>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <main class="main-content">
+    <div class="project-grid" id="projectList"></div>
+    <div class="empty-state" id="emptyState">
+      <span class="empty-icon">📂</span>
+      <p>案件が見つかりません</p>
+      <p style="font-size:12px; color:#9aa5b4">「新規案件登録」から追加してください</p>
+    </div>
+  </main>
+
+  <!-- =============================================
+       案件追加・編集 モーダル
+       ============================================= -->
+  <div id="projectModal" class="modal-overlay">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2 id="modalTitle">新規案件登録</h2>
+        <button class="btn-modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <form id="projectForm">
+        <div class="modal-body">
+          <input type="hidden" id="editProjectId" />
+
+          <div class="form-group">
+            <label class="form-label" for="formHospitalName">
+              病院名<span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="formHospitalName"
+              class="form-input"
+              placeholder="例：○○総合病院"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formGoLiveDate">稼働予定日</label>
+            <input
+              type="date"
+              id="formGoLiveDate"
+              class="form-input"
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formMainPerson">メイン担当</label>
+            <select id="formMainPerson" class="form-select">
+              <option value="">-- 選択してください --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formSubPerson">サブ担当</label>
+            <select id="formSubPerson" class="form-select">
+              <option value="">-- 選択してください --</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formCurrentTask">現在のタスク</label>
+            <select id="formCurrentTask" class="form-select">
+              <!-- app.js で動的生成 -->
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="formMemo">備考</label>
+            <textarea
+              id="formMemo"
+              class="form-textarea"
+              placeholder="メモを入力..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">キャンセル</button>
+          <button type="submit" class="btn btn-primary">保存</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =============================================
+       削除確認 モーダル
+       ============================================= -->
+  <div id="deleteModal" class="modal-overlay">
+    <div class="modal-box delete-modal-box">
+      <div class="modal-header">
+        <h2>案件の削除</h2>
+        <button class="btn-modal-close" onclick="closeDeleteModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="delete-info">
+          ⚠️ この操作は取り消せません。<br />削除パスワードを入力してください。
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="deletePassword">パスワード</label>
+          <input
+            type="password"
+            id="deletePassword"
+            class="form-input"
+            placeholder="削除パスワードを入力"
+            autocomplete="off"
+          />
+        </div>
+        <div class="error-text" id="deleteError"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDeleteModal()">キャンセル</button>
+        <button class="btn btn-delete" onclick="confirmDelete()">削除する</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- トースト通知 -->
+  <div id="toast" class="toast"></div>
+
+  <!-- アプリ JS -->
+  <script src="firebase-config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
