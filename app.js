@@ -4,13 +4,13 @@
 
 const TASKS = [
   "01 商談中",
-  "02 デモンストレーション",
-  "03 概算見積もり（参考価格書）提出",
-  "04 導入環境確認（仮想／NW環境含む）",
-  "05 仕入れ見積もり取得",
-  "06 最終見積提出",
-  "07 受注",
-  "08 社内キックオフ",
+  "02 概算見積もり（参考価格書）提出",
+  "03 導入環境確認（仮想／NW環境含む）",
+  "04 仕入れ見積もり取得",
+  "05 最終見積提出",
+  "06 受注",
+  "07 社内キックオフ",
+  "08 システム構築準備期間",
   "09 稼働（立会等）",
   "10 稼働後フォロー",
 ];
@@ -42,17 +42,25 @@ function checkDelay(project) {
   const daysUntilLive = Math.ceil((live - today) / (1000 * 60 * 60 * 24));
   const t = project.currentTask;
 
-  // 完了済み（全工程終了）
   if (t >= TASKS.length) return "completed";
 
-  // 赤：社内キックオフ（08）が稼働180日前で未完
-  if (t < 8 && daysUntilLive <= 180) return "delay";
+  // 稼働後1日経過（09稼働が完了していない）
+  if (t <= 8 && daysUntilLive < -1) return "warning";
 
-  // 赤：導入環境確認（04）が稼働200日前で未完
-  if (t < 4 && daysUntilLive <= 200) return "delay";
+  // 赤：社内キックオフ（07）が稼働170日前で未完
+  if (t < 7 && daysUntilLive <= 170) return "delay";
 
-  // 黄：商談中（01）のみで稼働200日前
-  if (t === 0 && daysUntilLive <= 200) return "warning";
+  // 赤：受注（06）が稼働180日前で未完
+  if (t < 6 && daysUntilLive <= 180) return "delay";
+
+  // 赤：最終見積提出（05）が稼働190日前で未完
+  if (t < 5 && daysUntilLive <= 190) return "delay";
+
+  // 赤：導入環境確認（03）が稼働210日前で未完
+  if (t < 3 && daysUntilLive <= 210) return "delay";
+
+  // 黄：商談中（01）のみで稼働240日前
+  if (t === 0 && daysUntilLive <= 240) return "warning";
 
   return "";
 }
