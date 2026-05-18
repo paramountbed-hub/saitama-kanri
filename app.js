@@ -8,11 +8,12 @@ const TASKS = [
   "03 導入環境確認（仮想／NW環境含む）",
   "04 仕入れ見積もり取得",
   "05 最終見積提出",
-  "06 受注",
-  "07 社内キックオフ",
-  "08 システム構築準備期間",
-  "09 稼働（立会等）",
-  "10 稼働後フォロー",
+  "06 カスタマーサクセス打合せ",
+  "07 受注",
+  "08 社内キックオフ",
+  "09 システム構築準備期間",
+  "10 稼働（立会等）",
+  "11 稼働後フォロー",
 ];
 
 const STAFF = [
@@ -44,14 +45,14 @@ function checkDelay(project) {
 
   if (t >= TASKS.length) return "completed";
 
-  // 稼働後1日経過（09稼働が完了していない）
-  if (t <= 8 && daysUntilLive < -1) return "warning";
+  // 黄：稼働後1日経過（10稼働が完了していない）
+  if (t <= 9 && daysUntilLive < -1) return "warning";
 
-  // 赤：社内キックオフ（07）が稼働170日前で未完
-  if (t < 7 && daysUntilLive <= 170) return "delay";
+  // 赤：社内キックオフ（08）が稼働170日前で未完
+  if (t < 8 && daysUntilLive <= 170) return "delay";
 
-  // 赤：受注（06）が稼働180日前で未完
-  if (t < 6 && daysUntilLive <= 180) return "delay";
+  // 赤：受注（07）が稼働180日前で未完
+  if (t < 7 && daysUntilLive <= 180) return "delay";
 
   // 赤：最終見積提出（05）が稼働190日前で未完
   if (t < 5 && daysUntilLive <= 190) return "delay";
@@ -75,20 +76,14 @@ function createCard(project) {
     100
   );
   const isCompleted = project.currentTask >= TASKS.length;
-  const currentTaskLabel = isCompleted
-    ? "✅ 全工程完了"
-    : TASKS[project.currentTask];
+  const currentTaskLabel = isCompleted ? "✅ 全工程完了" : TASKS[project.currentTask];
 
   const live = new Date(project.goLiveDate);
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const daysUntilLive = Math.ceil((live - today) / (1000 * 60 * 60 * 24));
   const liveFormatted = project.goLiveDate
-    ? live.toLocaleDateString("ja-JP", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-      })
+    ? live.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" })
     : "未設定";
 
   let daysLabel = "";
@@ -106,7 +101,6 @@ function createCard(project) {
   else if (statusClass === "completed")
     statusBadge = `<span class="badge badge-completed">完了</span>`;
 
-  // 進捗ドット
   const dots = TASKS.map((_, i) => {
     let cls = "dot";
     if (i < project.currentTask) cls += " dot-done";
@@ -145,10 +139,13 @@ function createCard(project) {
       ${project.memo ? `<div class="card-memo">📝 ${escapeHtml(project.memo)}</div>` : ""}
 
       <div class="card-actions">
-        ${
-          !isCompleted
-            ? `<button class="btn btn-next" onclick="advanceTask('${project.id}', ${project.currentTask})">完了 → 次へ</button>`
-            : `<button class="btn btn-done" disabled>全工程完了</button>`
+        ${!isCompleted
+          ? `<button class="btn btn-next" onclick="advanceTask('${project.id}', ${project.currentTask})">完了 → 次へ</button>`
+          : `<button class="btn btn-done" disabled>全工程完了</button>`
+        }
+        ${project.currentTask > 0 && !isCompleted
+          ? `<button class="btn btn-revert" onclick="revertTask('${project.id}', ${project.currentTask})">← 戻る</button>`
+          : ``
         }
         <button class="btn btn-edit" onclick="openEditModal('${project.id}')">編集</button>
         <button class="btn btn-delete" onclick="openDeleteModal('${project.id}')">削除</button>
@@ -174,7 +171,6 @@ function renderProjects() {
     return matchName && matchPerson;
   });
 
-  // 遅延→注意→通常→完了 の優先ソート、次に稼働日昇順
   const priority = { delay: 0, warning: 1, "": 2, completed: 3 };
   filtered.sort((a, b) => {
     const pa = priority[checkDelay(a)];
@@ -254,7 +250,28 @@ async function advanceTask(id, currentTask) {
 }
 
 // =============================================
-// 案件追加モーダル
+// タスクを戻す
+// =============================================
+async function revertTask(id, currentTask) {
+  if (currentTask <= 0) return;
+  const prevTask = currentTask - 1;
+  const label = TASKS[prevTask];
+  const confirmed = confirm(
+    `ひとつ前のタスクに戻します。\n戻り先：${label}\n\nよろしいですか？`
+  );
+  if (!confirmed) return;
+
+  try {
+    await db.collection("projects").doc(id).update({ currentTask: prevTask });
+    showToast("タスクを戻しました");
+  } catch (e) {
+    console.error(e);
+    showToast("更新に失敗しました", "error");
+  }
+}
+
+// =============================================
+// 案件追加・編集モーダル
 // =============================================
 function openAddModal() {
   document.getElementById("modalTitle").textContent = "新規案件登録";
@@ -288,7 +305,8 @@ function closeModal() {
 function populateStaffSelects() {
   ["formMainPerson", "formSubPerson"].forEach((id) => {
     const sel = document.getElementById(id);
-    sel.innerHTML = `<option value="">-- 選択してください --</option>` +
+    sel.innerHTML =
+      `<option value="">-- 選択してください --</option>` +
       STAFF.map((s) => `<option value="${s}">${s}</option>`).join("");
   });
 }
@@ -347,8 +365,7 @@ function closeDeleteModal() {
 async function confirmDelete() {
   const pw = document.getElementById("deletePassword").value;
   if (pw !== "0000") {
-    document.getElementById("deleteError").textContent =
-      "パスワードが違います";
+    document.getElementById("deleteError").textContent = "パスワードが違います";
     return;
   }
   if (!pendingDeleteId) return;
@@ -413,7 +430,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("projectForm").addEventListener("submit", saveProject);
 
-  // モーダル外クリックで閉じる
   document.getElementById("projectModal").addEventListener("click", (e) => {
     if (e.target.id === "projectModal") closeModal();
   });
@@ -421,14 +437,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (e.target.id === "deleteModal") closeDeleteModal();
   });
 
-  // Enterキーで削除確定
   document.getElementById("deletePassword").addEventListener("keydown", (e) => {
     if (e.key === "Enter") confirmDelete();
   });
 
-  // タスクセレクト初期化
   const taskSel = document.getElementById("formCurrentTask");
-  taskSel.innerHTML = TASKS.map(
-    (t, i) => `<option value="${i}">${t}</option>`
-  ).join("") + `<option value="${TASKS.length}">完了（全工程終了）</option>`;
+  taskSel.innerHTML =
+    TASKS.map((t, i) => `<option value="${i}">${t}</option>`).join("") +
+    `<option value="${TASKS.length}">完了（全工程終了）</option>`;
 });
