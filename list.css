@@ -92,7 +92,7 @@
 }
 
 /* 列幅 */
-.col-status   { width: 80px; }
+.col-status   { width: 70px; }
 .col-hospital { width: 180px; }
 .col-live     { width: 110px; white-space: nowrap; }
 .col-days     { width: 90px; }
