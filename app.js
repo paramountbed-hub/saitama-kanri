@@ -17,7 +17,7 @@ const TASKS = [
 ];
 
 const STAFF = [
-  "本田 正信",
+  "奥山 義弘",
   "西尾 仁志",
   "江副 洋介",
   "松浦 寿和",
@@ -147,6 +147,7 @@ function createCard(project) {
           ? `<button class="btn btn-revert" onclick="revertTask('${project.id}', ${project.currentTask})">← 戻る</button>`
           : ``
         }
+        <button class="btn btn-detail" onclick="openDetailModal('${project.id}')">詳細</button>
         <button class="btn btn-edit" onclick="openEditModal('${project.id}')">編集</button>
         <button class="btn btn-delete" onclick="openDeleteModal('${project.id}')">削除</button>
       </div>
@@ -271,6 +272,55 @@ async function revertTask(id, currentTask) {
 }
 
 // =============================================
+// 詳細ポップアップ
+// =============================================
+function openDetailModal(id) {
+  const p = allProjects.find((x) => x.id === id);
+  if (!p) return;
+
+  document.getElementById("detailTitle").textContent = p.hospitalName || "施設詳細";
+
+  const rows = [
+    { label: "稼働日（予定含む）",           value: p.goLiveDate || "" },
+    { label: "施設名",                        value: p.hospitalName || "" },
+    { label: "経営主体",                      value: p.keieiShukai || "" },
+    { label: "許可病床数",                    value: p.kyokaBedNum || "" },
+    { label: "病棟構成",                      value: p.byokoKosei || "" },
+    { label: "導入病棟",                      value: p.donyuByoko || "" },
+    { label: "導入病床数",                    value: p.donyuBedNum || "" },
+    { label: "眠りSCAN（既存/新規台数）",     value: p.nemiriScan || "" },
+    { label: "離床CATCH（既存/新規台数）",    value: p.rishoCatch || "" },
+    { label: "タブレット設置位置",            value: p.tabletPos || "" },
+    { label: "接続方法",                      value: p.setsuzokuHoho || "" },
+    { label: "電子カルテ（ベンダー/機種）",   value: p.electronicKarte || "" },
+    { label: "ナースコール（メーカー/機種）", value: p.nurseCall || "" },
+    { label: "周辺連携機能",                  value: p.shuhenRenkei || "" },
+    { label: "PB/PT担当",                     value: p.pbPt || "" },
+    { label: "スケジュール状況",              value: p.scheduleStatus || "" },
+    { label: "備考",                          value: p.memo || "" },
+  ];
+
+  document.getElementById("detailBody").innerHTML = `
+    <table class="detail-table">
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <th>${escapeHtml(r.label)}</th>
+            <td>${escapeHtml(r.value) || '<span style="color:#9aa5b4">未入力</span>'}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+  document.getElementById("detailModal").classList.add("open");
+}
+
+function closeDetailModal() {
+  document.getElementById("detailModal").classList.remove("open");
+}
+
+// =============================================
 // 案件追加・編集モーダル
 // =============================================
 function openAddModal() {
@@ -292,6 +342,25 @@ function openEditModal(id) {
   document.getElementById("formGoLiveDate").value = project.goLiveDate || "";
   document.getElementById("formCurrentTask").value = project.currentTask ?? 0;
   document.getElementById("formMemo").value = project.memo || "";
+  // 施設情報
+  document.getElementById("formKeieiShukai").value = project.keieiShukai || "";
+  document.getElementById("formKyokaBedNum").value = project.kyokaBedNum || "";
+  document.getElementById("formByokoKosei").value = project.byokoKosei || "";
+  document.getElementById("formDonyuByoko").value = project.donyuByoko || "";
+  document.getElementById("formDonyuBedNum").value = project.donyuBedNum || "";
+  // 機器情報
+  document.getElementById("formNemiriScan").value = project.nemiriScan || "";
+  document.getElementById("formRishocatch").value = project.rishoCatch || "";
+  document.getElementById("formTabletPos").value = project.tabletPos || "";
+  document.getElementById("formSetsuzokuHoho").value = project.setsuzokuHoho || "";
+  // システム連携
+  document.getElementById("formElectronicKarte").value = project.electronicKarte || "";
+  document.getElementById("formNurseCall").value = project.nurseCall || "";
+  document.getElementById("formShuhenRenkei").value = project.shuhenRenkei || "";
+  // 担当・スケジュール
+  document.getElementById("formPbPt").value = project.pbPt || "";
+  document.getElementById("formScheduleStatus").value = project.scheduleStatus || "";
+
   populateStaffSelects();
   document.getElementById("formMainPerson").value = project.mainPerson || "";
   document.getElementById("formSubPerson").value = project.subPerson || "";
@@ -321,6 +390,24 @@ async function saveProject(e) {
     subPerson: document.getElementById("formSubPerson").value,
     memo: document.getElementById("formMemo").value.trim(),
     currentTask: parseInt(document.getElementById("formCurrentTask").value) || 0,
+    // 施設情報
+    keieiShukai: document.getElementById("formKeieiShukai").value.trim(),
+    kyokaBedNum: document.getElementById("formKyokaBedNum").value.trim(),
+    byokoKosei: document.getElementById("formByokoKosei").value.trim(),
+    donyuByoko: document.getElementById("formDonyuByoko").value.trim(),
+    donyuBedNum: document.getElementById("formDonyuBedNum").value.trim(),
+    // 機器情報
+    nemiriScan: document.getElementById("formNemiriScan").value.trim(),
+    rishoCatch: document.getElementById("formRishocatch").value.trim(),
+    tabletPos: document.getElementById("formTabletPos").value.trim(),
+    setsuzokuHoho: document.getElementById("formSetsuzokuHoho").value.trim(),
+    // システム連携
+    electronicKarte: document.getElementById("formElectronicKarte").value.trim(),
+    nurseCall: document.getElementById("formNurseCall").value.trim(),
+    shuhenRenkei: document.getElementById("formShuhenRenkei").value.trim(),
+    // 担当・スケジュール
+    pbPt: document.getElementById("formPbPt").value.trim(),
+    scheduleStatus: document.getElementById("formScheduleStatus").value.trim(),
   };
 
   if (!data.hospitalName) {
@@ -435,6 +522,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.getElementById("deleteModal").addEventListener("click", (e) => {
     if (e.target.id === "deleteModal") closeDeleteModal();
+  });
+  document.getElementById("detailModal").addEventListener("click", (e) => {
+    if (e.target.id === "detailModal") closeDetailModal();
   });
 
   document.getElementById("deletePassword").addEventListener("keydown", (e) => {

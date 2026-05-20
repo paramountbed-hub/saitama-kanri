@@ -17,7 +17,7 @@ const TASKS = [
 ];
 
 const STAFF = [
-  "本田 正信", "西尾 仁志", "江副 洋介", "松浦 寿和", "小嶋 直樹",
+  "奥山 義弘", "西尾 仁志", "江副 洋介", "松浦 寿和", "小嶋 直樹",
   "中村 美月", "増田 慶太", "佐藤 裕二", "赤松 稔丈", "その他",
 ];
 
@@ -117,7 +117,7 @@ function renderTable() {
     return `
       <tr class="table-row-${status || 'normal'}">
         <td><span class="${cls}">${text}</span></td>
-        <td class="cell-hospital">${escapeHtml(p.hospitalName)}</td>
+        <td class="cell-hospital cell-clickable" onclick="openDetailModal('${p.id}')">${escapeHtml(p.hospitalName)}</td>
         <td>${liveFormatted}</td>
         <td class="${daysCls}">${daysText}</td>
         <td class="cell-task">${taskLabel}</td>
@@ -173,6 +173,55 @@ function initFilters() {
 }
 
 // =============================================
+// 詳細ポップアップ
+// =============================================
+function openDetailModal(id) {
+  const p = allProjects.find((x) => x.id === id);
+  if (!p) return;
+
+  document.getElementById("detailTitle").textContent = p.hospitalName || "施設詳細";
+
+  const rows = [
+    { label: "稼働日（予定含む）", value: p.goLiveDate || "" },
+    { label: "施設名",             value: p.hospitalName || "" },
+    { label: "経営主体",           value: p.keieiShukai || "" },
+    { label: "許可病床数",         value: p.kyokaBedNum || "" },
+    { label: "病棟構成",           value: p.byokoKosei || "" },
+    { label: "導入病棟",           value: p.donyuByoko || "" },
+    { label: "導入病床数",         value: p.donyuBedNum || "" },
+    { label: "眠りSCAN（既存/新規台数）", value: p.nemiriScan || "" },
+    { label: "離床CATCH（既存/新規台数）", value: p.rishoCatch || "" },
+    { label: "タブレット設置位置", value: p.tabletPos || "" },
+    { label: "接続方法",           value: p.setsuzokuHoho || "" },
+    { label: "電子カルテ（ベンダー/機種）", value: p.electronicKarte || "" },
+    { label: "ナースコール（メーカー/機種）", value: p.nurseCall || "" },
+    { label: "周辺連携機能",       value: p.shuhenRenkei || "" },
+    { label: "PB/PT担当",          value: p.pbPt || "" },
+    { label: "スケジュール状況",   value: p.scheduleStatus || "" },
+    { label: "備考",               value: p.memo || "" },
+  ];
+
+  document.getElementById("detailBody").innerHTML = `
+    <table class="detail-table">
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <th>${escapeHtml(r.label)}</th>
+            <td>${escapeHtml(r.value) || '<span style="color:#9aa5b4">未入力</span>'}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+
+  document.getElementById("detailModal").classList.add("open");
+}
+
+function closeDetailModal() {
+  document.getElementById("detailModal").classList.remove("open");
+}
+
+// =============================================
 // ユーティリティ
 // =============================================
 function escapeHtml(str) {
@@ -197,4 +246,8 @@ function showToast(msg, type = "success") {
 document.addEventListener("DOMContentLoaded", () => {
   initFilters();
   initFirestore();
+
+  document.getElementById("detailModal").addEventListener("click", (e) => {
+    if (e.target.id === "detailModal") closeDetailModal();
+  });
 });

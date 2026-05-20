@@ -17,7 +17,7 @@
   <header class="app-header">
     <div class="header-inner">
       <div class="header-title">
-        <a href="index.html" class="btn-back">← 戻る</a>
+        <a href="index.html" class="btn-back">← Top画面</a>
         <span class="logo">📋 全ステータス一覧</span>
         <span class="branch-tag">さいたま支店</span>
       </div>
@@ -69,6 +69,20 @@
       </table>
     </div>
   </main>
+
+  <!-- 詳細ポップアップ -->
+  <div id="detailModal" class="modal-overlay">
+    <div class="modal-box detail-modal-box">
+      <div class="modal-header">
+        <h2 id="detailTitle">施設詳細</h2>
+        <button class="btn-modal-close" onclick="closeDetailModal()">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDetailModal()">閉じる</button>
+      </div>
+    </div>
+  </div>
 
   <!-- トースト通知 -->
   <div id="toast" class="toast"></div>

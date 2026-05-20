@@ -92,7 +92,7 @@
 }
 
 /* 列幅 */
-.col-status   { width: 70px; }
+.col-status   { width: 160px; }
 .col-hospital { width: 180px; }
 .col-live     { width: 110px; white-space: nowrap; }
 .col-days     { width: 90px; }
@@ -131,10 +131,50 @@
   font-size: 14px;
 }
 
-/* --- スマホ対応 --- */
+/* 詳細モーダル */
+.detail-modal-box {
+  max-width: 640px;
+}
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.detail-table th {
+  width: 200px;
+  padding: 9px 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  font-weight: 600;
+  color: var(--gray-600);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.detail-table td {
+  padding: 9px 12px;
+  border: 1px solid var(--gray-200);
+  color: var(--gray-800);
+  vertical-align: top;
+  word-break: break-all;
+}
+
+/* 病院名クリック可能 */
+.cell-clickable {
+  cursor: pointer;
+  color: var(--blue) !important;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.cell-clickable:hover {
+  color: var(--accent) !important;
+}
+
+/* スマホ対応 */
 @media (max-width: 600px) {
-  .list-content { padding: 12px; }
-  .status-table { font-size: 12px; }
-  .status-table th,
-  .status-table td { padding: 9px 10px; }
+  .detail-table th { width: 120px; font-size: 11px; }
+  .detail-table td { font-size: 12px; }
 }

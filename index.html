@@ -135,9 +135,79 @@
             <label class="form-label" for="formCurrentTask">現在のタスク</label>
             <select id="formCurrentTask" class="form-select"></select>
           </div>
+          <!-- 施設情報 -->
+          <div class="form-section-title">施設情報</div>
+          <div class="form-group">
+            <label class="form-label" for="formKeieiShukai">経営主体</label>
+            <input type="text" id="formKeieiShukai" class="form-input" placeholder="例：市立" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formKyokaBedNum">許可病床数</label>
+            <input type="text" id="formKyokaBedNum" class="form-input" placeholder="例：800床" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formByokoKosei">病棟構成</label>
+            <input type="text" id="formByokoKosei" class="form-input" placeholder="例：急性期主体（ICU20床、HCU20床、回復期100床）" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formDonyuByoko">導入病棟</label>
+            <input type="text" id="formDonyuByoko" class="form-input" placeholder="例：ICU、HCU、3A病棟、4A病棟、5B病棟" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formDonyuBedNum">導入病床数</label>
+            <input type="text" id="formDonyuBedNum" class="form-input" placeholder="例：400床" />
+          </div>
+
+          <!-- 機器情報 -->
+          <div class="form-section-title">機器情報</div>
+          <div class="form-group">
+            <label class="form-label" for="formNemiriScan">眠りSCAN（既存/新規台数）</label>
+            <input type="text" id="formNemiriScan" class="form-input" placeholder="例：既存0台／新規400台" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formRishoCatch">離床CATCH（既存/新規台数）</label>
+            <input type="text" id="formRishocatch" class="form-input" placeholder="例：既存30台／新規50台" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formTabletPos">タブレット設置位置</label>
+            <input type="text" id="formTabletPos" class="form-input" placeholder="例：床頭台前面" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formSetsuzokuHoho">接続方法</label>
+            <input type="text" id="formSetsuzokuHoho" class="form-input" placeholder="例：接続BOX（ベッド接続ケーブル方式）" />
+          </div>
+
+          <!-- システム連携 -->
+          <div class="form-section-title">システム連携</div>
+          <div class="form-group">
+            <label class="form-label" for="formElectronicKarte">電子カルテ（ベンダー/機種）</label>
+            <input type="text" id="formElectronicKarte" class="form-input" placeholder="例：富士通／HOPE LifeMark-HX" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formNurseCall">ナースコール（メーカー/機種）</label>
+            <input type="text" id="formNurseCall" class="form-input" placeholder="例：ケアコム／PLAIMH-NICCS" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formShuhenRenkei">周辺連携機能</label>
+            <input type="text" id="formShuhenRenkei" class="form-input" placeholder="例：Wi-Fiベッドナビ：あり、モバイル連携：なし" />
+          </div>
+
+          <!-- 担当・スケジュール -->
+          <div class="form-section-title">担当・スケジュール</div>
+          <div class="form-group">
+            <label class="form-label" for="formPbPt">PB/PT担当</label>
+            <input type="text" id="formPbPt" class="form-input" placeholder="例：PB：金田、PT：佐藤" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formScheduleStatus">スケジュール状況</label>
+            <input type="text" id="formScheduleStatus" class="form-input" placeholder="例：電カル更新：2025/7、NC更新：2025/7、現状：約1か月遅延" />
+          </div>
+
+          <!-- 備考 -->
+          <div class="form-section-title">備考</div>
           <div class="form-group">
             <label class="form-label" for="formMemo">備考</label>
-            <textarea id="formMemo" class="form-textarea" placeholder="メモを入力..."></textarea>
+            <textarea id="formMemo" class="form-textarea" placeholder="例：パラマウントベッドへの安心感、SBSのカスタマイズ性、今後の伴走支援体制をご評価いただく。&#10;特に現状使いこなせていないと感じている部分もあるためカスタマーサクセスに期待。&#10;観察項目食事量の入力は必須。&#10;標準構成をベースとして打合せ。認知症やDNAR等の表記要望あり"></textarea>
           </div>
         </div>
         <div class="modal-footer">
@@ -145,6 +215,20 @@
           <button type="submit" class="btn btn-primary">保存</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- 詳細ポップアップ -->
+  <div id="detailModal" class="modal-overlay">
+    <div class="modal-box detail-modal-box">
+      <div class="modal-header">
+        <h2 id="detailTitle">施設詳細</h2>
+        <button class="btn-modal-close" onclick="closeDetailModal()">✕</button>
+      </div>
+      <div class="modal-body" id="detailBody"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeDetailModal()">閉じる</button>
+      </div>
     </div>
   </div>
 

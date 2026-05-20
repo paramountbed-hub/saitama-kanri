@@ -99,6 +99,18 @@ body {
 .btn-add-main:hover { background: var(--blue-light); transform: translateY(-1px); }
 .btn-add-main:active { transform: translateY(0); }
 
+/* フォームセクションタイトル */
+.form-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--white);
+  background: var(--blue);
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: .05em;
+  margin-top: 4px;
+}
+
 .btn-list-view {
   background: rgba(255,255,255,.18);
   color: var(--white);
@@ -470,6 +482,47 @@ body {
   border: 1px solid var(--gray-200);
 }
 .btn-revert:hover { background: var(--gray-200); }
+
+.btn-detail {
+  background: #e8f0fc;
+  color: var(--blue-dark);
+  border: 1px solid #c5d8f5;
+}
+.btn-detail:hover { background: #d0e2fb; }
+
+/* 詳細テーブル */
+.detail-modal-box { max-width: 640px; }
+
+.detail-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.detail-table th {
+  width: 200px;
+  padding: 9px 12px;
+  background: var(--gray-50);
+  border: 1px solid var(--gray-200);
+  font-weight: 600;
+  color: var(--gray-600);
+  text-align: left;
+  vertical-align: top;
+  white-space: nowrap;
+}
+
+.detail-table td {
+  padding: 9px 12px;
+  border: 1px solid var(--gray-200);
+  color: var(--gray-800);
+  vertical-align: top;
+  word-break: break-all;
+}
+
+@media (max-width: 600px) {
+  .detail-table th { width: 120px; font-size: 11px; }
+  .detail-table td { font-size: 12px; }
+}
 
 .btn-edit {
   background: var(--gray-100);
