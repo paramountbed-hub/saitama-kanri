@@ -17,16 +17,8 @@ const TASKS = [
 ];
 
 const STAFF = [
-  "奥山 義弘",
-  "西尾 仁志",
-  "江副 洋介",
-  "松浦 寿和",
-  "小嶋 直樹",
-  "中村 美月",
-  "増田 慶太",
-  "佐藤 裕二",
-  "赤松 稔丈",
-  "その他",
+  "奥山 義弘", "西尾 仁志", "江副 洋介", "松浦 寿和", "小嶋 直樹",
+  "中村 美月", "増田 慶太", "佐藤 裕二", "赤松 稔丈", "その他",
 ];
 
 let allProjects = [];
@@ -44,25 +36,12 @@ function checkDelay(project) {
   const t = project.currentTask;
 
   if (t >= TASKS.length) return "completed";
-
-  // 黄：稼働後1日経過（10稼働が完了していない）
   if (t <= 9 && daysUntilLive < -1) return "warning";
-
-  // 赤：社内キックオフ（08）が稼働170日前で未完
   if (t < 8 && daysUntilLive <= 170) return "delay";
-
-  // 赤：受注（07）が稼働180日前で未完
   if (t < 7 && daysUntilLive <= 180) return "delay";
-
-  // 赤：最終見積提出（05）が稼働190日前で未完
   if (t < 5 && daysUntilLive <= 190) return "delay";
-
-  // 赤：導入環境確認（03）が稼働210日前で未完
   if (t < 3 && daysUntilLive <= 210) return "delay";
-
-  // 黄：商談中（01）のみで稼働240日前
   if (t === 0 && daysUntilLive <= 240) return "warning";
-
   return "";
 }
 
@@ -71,10 +50,7 @@ function checkDelay(project) {
 // =============================================
 function createCard(project) {
   const statusClass = checkDelay(project);
-  const progress = Math.min(
-    Math.round((project.currentTask / TASKS.length) * 100),
-    100
-  );
+  const progress = Math.min(Math.round((project.currentTask / TASKS.length) * 100), 100);
   const isCompleted = project.currentTask >= TASKS.length;
   const currentTaskLabel = isCompleted ? "✅ 全工程完了" : TASKS[project.currentTask];
 
@@ -94,12 +70,9 @@ function createCard(project) {
   }
 
   let statusBadge = "";
-  if (statusClass === "delay")
-    statusBadge = `<span class="badge badge-delay">遅延</span>`;
-  else if (statusClass === "warning")
-    statusBadge = `<span class="badge badge-warning">注意</span>`;
-  else if (statusClass === "completed")
-    statusBadge = `<span class="badge badge-completed">完了</span>`;
+  if (statusClass === "delay")     statusBadge = `<span class="badge badge-delay">遅延</span>`;
+  else if (statusClass === "warning")   statusBadge = `<span class="badge badge-warning">注意</span>`;
+  else if (statusClass === "completed") statusBadge = `<span class="badge badge-completed">完了</span>`;
 
   const dots = TASKS.map((_, i) => {
     let cls = "dot";
@@ -124,7 +97,6 @@ function createCard(project) {
           <span class="staff-tag sub">S：${escapeHtml(project.subPerson || "未設定")}</span>
         </div>
       </div>
-
       <div class="card-progress">
         <div class="progress-header">
           <span class="current-task-label">${currentTaskLabel}</span>
@@ -135,9 +107,7 @@ function createCard(project) {
         </div>
         <div class="progress-dots">${dots}</div>
       </div>
-
       ${project.memo ? `<div class="card-memo">📝 ${escapeHtml(project.memo)}</div>` : ""}
-
       <div class="card-actions">
         ${!isCompleted
           ? `<button class="btn btn-next" onclick="advanceTask('${project.id}', ${project.currentTask})">完了 → 次へ</button>`
@@ -165,10 +135,7 @@ function renderProjects() {
   let filtered = allProjects.filter((p) => {
     const q = searchQuery.toLowerCase();
     const matchName = p.hospitalName?.toLowerCase().includes(q) ?? false;
-    const matchPerson =
-      !filterPerson ||
-      p.mainPerson === filterPerson ||
-      p.subPerson === filterPerson;
+    const matchPerson = !filterPerson || p.mainPerson === filterPerson || p.subPerson === filterPerson;
     return matchName && matchPerson;
   });
 
@@ -199,10 +166,7 @@ function initFirestore() {
     .orderBy("goLiveDate", "asc")
     .onSnapshot(
       (snapshot) => {
-        allProjects = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
+        allProjects = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
         renderProjects();
         updateStats();
       },
@@ -217,15 +181,10 @@ function initFirestore() {
 // 統計
 // =============================================
 function updateStats() {
-  const total = allProjects.length;
-  const delays = allProjects.filter((p) => checkDelay(p) === "delay").length;
-  const warnings = allProjects.filter((p) => checkDelay(p) === "warning").length;
-  const completed = allProjects.filter((p) => checkDelay(p) === "completed").length;
-
-  document.getElementById("statTotal").textContent = total;
-  document.getElementById("statDelay").textContent = delays;
-  document.getElementById("statWarning").textContent = warnings;
-  document.getElementById("statCompleted").textContent = completed;
+  document.getElementById("statTotal").textContent = allProjects.length;
+  document.getElementById("statDelay").textContent   = allProjects.filter(p => checkDelay(p) === "delay").length;
+  document.getElementById("statWarning").textContent = allProjects.filter(p => checkDelay(p) === "warning").length;
+  document.getElementById("statCompleted").textContent = allProjects.filter(p => checkDelay(p) === "completed").length;
 }
 
 // =============================================
@@ -234,13 +193,8 @@ function updateStats() {
 async function advanceTask(id, currentTask) {
   const nextTask = currentTask + 1;
   if (nextTask > TASKS.length) return;
-
   const label = nextTask >= TASKS.length ? "全工程完了" : TASKS[nextTask];
-  const confirmed = confirm(
-    `現在のタスクを完了にして次へ進みます。\n次：${label}\n\nよろしいですか？`
-  );
-  if (!confirmed) return;
-
+  if (!confirm(`現在のタスクを完了にして次へ進みます。\n次：${label}\n\nよろしいですか？`)) return;
   try {
     await db.collection("projects").doc(id).update({ currentTask: nextTask });
     showToast("進捗を更新しました");
@@ -256,12 +210,7 @@ async function advanceTask(id, currentTask) {
 async function revertTask(id, currentTask) {
   if (currentTask <= 0) return;
   const prevTask = currentTask - 1;
-  const label = TASKS[prevTask];
-  const confirmed = confirm(
-    `ひとつ前のタスクに戻します。\n戻り先：${label}\n\nよろしいですか？`
-  );
-  if (!confirmed) return;
-
+  if (!confirm(`ひとつ前のタスクに戻します。\n戻り先：${TASKS[prevTask]}\n\nよろしいですか？`)) return;
   try {
     await db.collection("projects").doc(id).update({ currentTask: prevTask });
     showToast("タスクを戻しました");
@@ -281,23 +230,24 @@ function openDetailModal(id) {
   document.getElementById("detailTitle").textContent = p.hospitalName || "施設詳細";
 
   const rows = [
-    { label: "稼働日（予定含む）",           value: p.goLiveDate || "" },
-    { label: "施設名",                        value: p.hospitalName || "" },
-    { label: "経営主体",                      value: p.keieiShukai || "" },
-    { label: "許可病床数",                    value: p.kyokaBedNum || "" },
-    { label: "病棟構成",                      value: p.byokoKosei || "" },
-    { label: "導入病棟",                      value: p.donyuByoko || "" },
-    { label: "導入病床数",                    value: p.donyuBedNum || "" },
-    { label: "眠りSCAN（既存/新規台数）",     value: p.nemiriScan || "" },
-    { label: "離床CATCH（既存/新規台数）",    value: p.rishoCatch || "" },
-    { label: "タブレット設置位置",            value: p.tabletPos || "" },
-    { label: "接続方法",                      value: p.setsuzokuHoho || "" },
-    { label: "電子カルテ（ベンダー/機種）",   value: p.electronicKarte || "" },
-    { label: "ナースコール（メーカー/機種）", value: p.nurseCall || "" },
-    { label: "周辺連携機能",                  value: p.shuhenRenkei || "" },
-    { label: "PB/PT担当",                     value: p.pbPt || "" },
-    { label: "スケジュール状況",              value: p.scheduleStatus || "" },
-    { label: "備考",                          value: p.memo || "" },
+    { label: "稼働日（予定含む）",              value: p.goLiveDate || "" },
+    { label: "施設名",                           value: p.hospitalName || "" },
+    { label: "メイン担当",                       value: p.mainPerson || "" },
+    { label: "経営主体",                         value: p.keieiShukai || "" },
+    { label: "許可病床数",                       value: p.kyokaBedNum || "" },
+    { label: "病棟構成",                         value: p.byokoKosei || "" },
+    { label: "導入病棟",                         value: p.donyuByoko || "" },
+    { label: "導入病床数",                       value: p.donyuBedNum || "" },
+    { label: "ベッドサイド端末（既存/新規台数）", value: p.bedsideTerminal || "" },
+    { label: "眠りSCAN（既存/新規台数）",        value: p.nemiriScan || "" },
+    { label: "離床CATCH（既存/新規台数）",       value: p.rishoCatch || "" },
+    { label: "Wi-Fiベッドナビ（既存/新規台数）", value: p.wifiNav || "" },
+    { label: "タブレット設置位置",               value: p.tabletPos || "" },
+    { label: "電子カルテ（ベンダー/機種）",      value: p.electronicKarte || "" },
+    { label: "ナースコール（メーカー/機種）",    value: p.nurseCall || "" },
+    { label: "周辺連携機能",                     value: p.shuhenRenkei || "" },
+    { label: "スケジュール状況",                 value: p.scheduleStatus || "" },
+    { label: "備考",                             value: p.memo || "" },
   ];
 
   document.getElementById("detailBody").innerHTML = `
@@ -306,13 +256,12 @@ function openDetailModal(id) {
         ${rows.map(r => `
           <tr>
             <th>${escapeHtml(r.label)}</th>
-            <td>${escapeHtml(r.value) || '<span style="color:#9aa5b4">未入力</span>'}</td>
+            <td>${r.value ? escapeHtml(r.value) : '<span style="color:#9aa5b4">未入力</span>'}</td>
           </tr>
         `).join("")}
       </tbody>
     </table>
   `;
-
   document.getElementById("detailModal").classList.add("open");
 }
 
@@ -327,7 +276,6 @@ function openAddModal() {
   document.getElementById("modalTitle").textContent = "新規案件登録";
   document.getElementById("projectForm").reset();
   document.getElementById("editProjectId").value = "";
-  document.getElementById("formCurrentTask").value = 0;
   populateStaffSelects();
   document.getElementById("projectModal").classList.add("open");
 }
@@ -338,32 +286,32 @@ function openEditModal(id) {
 
   document.getElementById("modalTitle").textContent = "案件編集";
   document.getElementById("editProjectId").value = id;
-  document.getElementById("formHospitalName").value = project.hospitalName || "";
-  document.getElementById("formGoLiveDate").value = project.goLiveDate || "";
-  document.getElementById("formCurrentTask").value = project.currentTask ?? 0;
-  document.getElementById("formMemo").value = project.memo || "";
+  document.getElementById("formHospitalName").value  = project.hospitalName || "";
+  document.getElementById("formGoLiveDate").value    = project.goLiveDate || "";
+  document.getElementById("formCurrentTask").value   = project.currentTask ?? 0;
+  document.getElementById("formMemo").value          = project.memo || "";
   // 施設情報
-  document.getElementById("formKeieiShukai").value = project.keieiShukai || "";
-  document.getElementById("formKyokaBedNum").value = project.kyokaBedNum || "";
-  document.getElementById("formByokoKosei").value = project.byokoKosei || "";
-  document.getElementById("formDonyuByoko").value = project.donyuByoko || "";
-  document.getElementById("formDonyuBedNum").value = project.donyuBedNum || "";
+  document.getElementById("formKeieiShukai").value   = project.keieiShukai || "";
+  document.getElementById("formKyokaBedNum").value   = project.kyokaBedNum || "";
+  document.getElementById("formByokoKosei").value    = project.byokoKosei || "";
+  document.getElementById("formDonyuByoko").value    = project.donyuByoko || "";
+  document.getElementById("formDonyuBedNum").value   = project.donyuBedNum || "";
   // 機器情報
-  document.getElementById("formNemiriScan").value = project.nemiriScan || "";
-  document.getElementById("formRishocatch").value = project.rishoCatch || "";
-  document.getElementById("formTabletPos").value = project.tabletPos || "";
-  document.getElementById("formSetsuzokuHoho").value = project.setsuzokuHoho || "";
+  document.getElementById("formBedsideTerminal").value = project.bedsideTerminal || "";
+  document.getElementById("formNemiriScan").value    = project.nemiriScan || "";
+  document.getElementById("formRishoCatch").value    = project.rishoCatch || "";
+  document.getElementById("formWifiNav").value       = project.wifiNav || "";
+  document.getElementById("formTabletPos").value     = project.tabletPos || "";
   // システム連携
   document.getElementById("formElectronicKarte").value = project.electronicKarte || "";
-  document.getElementById("formNurseCall").value = project.nurseCall || "";
-  document.getElementById("formShuhenRenkei").value = project.shuhenRenkei || "";
-  // 担当・スケジュール
-  document.getElementById("formPbPt").value = project.pbPt || "";
+  document.getElementById("formNurseCall").value     = project.nurseCall || "";
+  document.getElementById("formShuhenRenkei").value  = project.shuhenRenkei || "";
+  // スケジュール
   document.getElementById("formScheduleStatus").value = project.scheduleStatus || "";
 
   populateStaffSelects();
   document.getElementById("formMainPerson").value = project.mainPerson || "";
-  document.getElementById("formSubPerson").value = project.subPerson || "";
+  document.getElementById("formSubPerson").value  = project.subPerson || "";
   document.getElementById("projectModal").classList.add("open");
 }
 
@@ -374,8 +322,7 @@ function closeModal() {
 function populateStaffSelects() {
   ["formMainPerson", "formSubPerson"].forEach((id) => {
     const sel = document.getElementById(id);
-    sel.innerHTML =
-      `<option value="">-- 選択してください --</option>` +
+    sel.innerHTML = `<option value="">-- 選択してください --</option>` +
       STAFF.map((s) => `<option value="${s}">${s}</option>`).join("");
   });
 }
@@ -384,29 +331,29 @@ async function saveProject(e) {
   e.preventDefault();
   const id = document.getElementById("editProjectId").value;
   const data = {
-    hospitalName: document.getElementById("formHospitalName").value.trim(),
-    goLiveDate: document.getElementById("formGoLiveDate").value,
-    mainPerson: document.getElementById("formMainPerson").value,
-    subPerson: document.getElementById("formSubPerson").value,
-    memo: document.getElementById("formMemo").value.trim(),
-    currentTask: parseInt(document.getElementById("formCurrentTask").value) || 0,
+    hospitalName:  document.getElementById("formHospitalName").value.trim(),
+    goLiveDate:    document.getElementById("formGoLiveDate").value,
+    mainPerson:    document.getElementById("formMainPerson").value,
+    subPerson:     document.getElementById("formSubPerson").value,
+    memo:          document.getElementById("formMemo").value.trim(),
+    currentTask:   parseInt(document.getElementById("formCurrentTask").value) || 0,
     // 施設情報
-    keieiShukai: document.getElementById("formKeieiShukai").value.trim(),
-    kyokaBedNum: document.getElementById("formKyokaBedNum").value.trim(),
-    byokoKosei: document.getElementById("formByokoKosei").value.trim(),
-    donyuByoko: document.getElementById("formDonyuByoko").value.trim(),
-    donyuBedNum: document.getElementById("formDonyuBedNum").value.trim(),
+    keieiShukai:   document.getElementById("formKeieiShukai").value.trim(),
+    kyokaBedNum:   document.getElementById("formKyokaBedNum").value.trim(),
+    byokoKosei:    document.getElementById("formByokoKosei").value.trim(),
+    donyuByoko:    document.getElementById("formDonyuByoko").value.trim(),
+    donyuBedNum:   document.getElementById("formDonyuBedNum").value.trim(),
     // 機器情報
-    nemiriScan: document.getElementById("formNemiriScan").value.trim(),
-    rishoCatch: document.getElementById("formRishocatch").value.trim(),
-    tabletPos: document.getElementById("formTabletPos").value.trim(),
-    setsuzokuHoho: document.getElementById("formSetsuzokuHoho").value.trim(),
+    bedsideTerminal: document.getElementById("formBedsideTerminal").value.trim(),
+    nemiriScan:    document.getElementById("formNemiriScan").value.trim(),
+    rishoCatch:    document.getElementById("formRishoCatch").value.trim(),
+    wifiNav:       document.getElementById("formWifiNav").value.trim(),
+    tabletPos:     document.getElementById("formTabletPos").value.trim(),
     // システム連携
     electronicKarte: document.getElementById("formElectronicKarte").value.trim(),
-    nurseCall: document.getElementById("formNurseCall").value.trim(),
-    shuhenRenkei: document.getElementById("formShuhenRenkei").value.trim(),
-    // 担当・スケジュール
-    pbPt: document.getElementById("formPbPt").value.trim(),
+    nurseCall:     document.getElementById("formNurseCall").value.trim(),
+    shuhenRenkei:  document.getElementById("formShuhenRenkei").value.trim(),
+    // スケジュール
     scheduleStatus: document.getElementById("formScheduleStatus").value.trim(),
   };
 
@@ -456,7 +403,6 @@ async function confirmDelete() {
     return;
   }
   if (!pendingDeleteId) return;
-
   try {
     await db.collection("projects").doc(pendingDeleteId).delete();
     showToast("案件を削除しました");
@@ -475,10 +421,8 @@ function initSearch() {
     searchQuery = e.target.value;
     renderProjects();
   });
-
   const sel = document.getElementById("staffFilter");
-  sel.innerHTML =
-    `<option value="">全員表示</option>` +
+  sel.innerHTML = `<option value="">全員表示</option>` +
     STAFF.map((s) => `<option value="${s}">${s}</option>`).join("");
   sel.addEventListener("change", (e) => {
     filterPerson = e.target.value;
@@ -501,11 +445,7 @@ function showToast(msg, type = "success") {
 // =============================================
 function escapeHtml(str) {
   if (!str) return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 // =============================================
@@ -526,7 +466,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("detailModal").addEventListener("click", (e) => {
     if (e.target.id === "detailModal") closeDetailModal();
   });
-
   document.getElementById("deletePassword").addEventListener("keydown", (e) => {
     if (e.key === "Enter") confirmDelete();
   });
