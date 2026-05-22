@@ -475,3 +475,85 @@ document.addEventListener("DOMContentLoaded", () => {
     TASKS.map((t, i) => `<option value="${i}">${t}</option>`).join("") +
     `<option value="${TASKS.length}">完了（全工程終了）</option>`;
 });
+
+// =============================================
+// JSONファイル読み込み → Firestore一括投入
+// =============================================
+async function importJsonFile(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // ファイル入力をリセット（同じファイルを再度選べるように）
+  event.target.value = "";
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    let projects;
+
+    // JSON解析
+    try {
+      projects = JSON.parse(e.target.result);
+    } catch (err) {
+      showToast("JSONの形式が正しくありません: " + err.message, "error");
+      return;
+    }
+
+    if (!Array.isArray(projects) || projects.length === 0) {
+      showToast("有効な案件データが見つかりません", "error");
+      return;
+    }
+
+    // 確認ダイアログ
+    const confirmed = confirm(
+      `${projects.length} 件の案件を読み込みました。\nFirestoreに投入しますか？\n\n※ 既存データは削除されません（追加のみ）`
+    );
+    if (!confirmed) return;
+
+    // Firestoreに一括投入
+    let successCount = 0;
+    let errorCount = 0;
+
+    for (const project of projects) {
+      try {
+        // 必須フィールドのデフォルト値を補完
+        const data = {
+          hospitalName:    project.hospitalName    || "",
+          keieiShukai:     project.keieiShukai     || "",
+          kyokaBedNum:     project.kyokaBedNum     || "",
+          bedsideTerminal: project.bedsideTerminal || "",
+          donyuByoko:      project.donyuByoko      || "",
+          nemiriScan:      project.nemiriScan      || "",
+          wifiNav:         project.wifiNav         || "",
+          nurseCall:       project.nurseCall       || "",
+          electronicKarte: project.electronicKarte || "",
+          goLiveDate:      project.goLiveDate      || "",
+          memo:            project.memo            || "",
+          // ツール側で手動入力する項目はデフォルト値
+          currentTask:     project.currentTask     !== undefined ? project.currentTask : 0,
+          mainPerson:      project.mainPerson      || "",
+          subPerson:       project.subPerson       || "",
+          createdAt:       project.createdAt       || new Date().toISOString(),
+        };
+
+        await db.collection("projects").add(data);
+        successCount++;
+      } catch (err) {
+        console.error("投入失敗:", project.hospitalName, err);
+        errorCount++;
+      }
+    }
+
+    // 結果通知
+    if (errorCount === 0) {
+      showToast(`${successCount} 件を投入しました`, "success");
+    } else {
+      showToast(`${successCount} 件成功 / ${errorCount} 件失敗`, "error");
+    }
+  };
+
+  reader.onerror = () => {
+    showToast("ファイルの読み込みに失敗しました", "error");
+  };
+
+  reader.readAsText(file, "UTF-8");
+}

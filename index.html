@@ -21,6 +21,8 @@
       </div>
       <div style="display:flex; gap:8px; align-items:center;">
         <a href="list.html" class="btn-list-view">📊 一覧表示</a>
+        <button class="btn-import" onclick="document.getElementById('jsonFileInput').click()">📥 JSON読み込み</button>
+        <input type="file" id="jsonFileInput" accept=".json,.txt" style="display:none" onchange="importJsonFile(event)" />
         <button class="btn-add-main" onclick="openAddModal()">＋ 新規案件登録</button>
       </div>
     </div>
