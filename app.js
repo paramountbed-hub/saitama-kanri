@@ -239,6 +239,7 @@ function openDetailModal(id) {
     { label: "導入病棟",                         value: p.donyuByoko || "" },
     { label: "導入病床数",                       value: p.donyuBedNum || "" },
     { label: "ベッドサイド端末（既存/新規台数）", value: p.bedsideTerminal || "" },
+    { label: "ステーション端末",              value: p.stationTerminal || "" },
     { label: "眠りSCAN（既存/新規台数）",        value: p.nemiriScan || "" },
     { label: "離床CATCH（既存/新規台数）",       value: p.rishoCatch || "" },
     { label: "Wi-Fiベッドナビ（既存/新規台数）", value: p.wifiNav || "" },
@@ -298,6 +299,7 @@ function openEditModal(id) {
   document.getElementById("formDonyuBedNum").value   = project.donyuBedNum || "";
   // 機器情報
   document.getElementById("formBedsideTerminal").value = project.bedsideTerminal || "";
+  document.getElementById("formStationTerminal").value = project.stationTerminal || "";
   document.getElementById("formNemiriScan").value    = project.nemiriScan || "";
   document.getElementById("formRishoCatch").value    = project.rishoCatch || "";
   document.getElementById("formWifiNav").value       = project.wifiNav || "";
@@ -345,6 +347,7 @@ async function saveProject(e) {
     donyuBedNum:   document.getElementById("formDonyuBedNum").value.trim(),
     // 機器情報
     bedsideTerminal: document.getElementById("formBedsideTerminal").value.trim(),
+    stationTerminal: document.getElementById("formStationTerminal").value.trim(),
     nemiriScan:    document.getElementById("formNemiriScan").value.trim(),
     rishoCatch:    document.getElementById("formRishoCatch").value.trim(),
     wifiNav:       document.getElementById("formWifiNav").value.trim(),
@@ -525,6 +528,7 @@ async function importJsonFile(event) {
         keieiShukai:     project.keieiShukai     || "",
         kyokaBedNum:     project.kyokaBedNum     || "",
         bedsideTerminal: project.bedsideTerminal || "",
+        stationTerminal: project.stationTerminal || "",
         donyuByoko:      project.donyuByoko      || "",
         nemiriScan:      project.nemiriScan      || "",
         wifiNav:         project.wifiNav         || "",

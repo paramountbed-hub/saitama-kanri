@@ -48,10 +48,10 @@ function checkDelay(project) {
 
 function statusLabel(status) {
   switch (status) {
-    case "delay":     return { text: "遅延",  cls: "badge badge-delay" };
-    case "warning":   return { text: "注意",  cls: "badge badge-warning" };
-    case "completed": return { text: "完了",  cls: "badge badge-completed" };
-    default:          return { text: "正常",  cls: "badge badge-normal" };
+    case "delay":     return { text: "遅延", cls: "badge badge-delay" };
+    case "warning":   return { text: "注意", cls: "badge badge-warning" };
+    case "completed": return { text: "完了", cls: "badge badge-completed" };
+    default:          return { text: "正常", cls: "badge badge-normal" };
   }
 }
 
@@ -64,10 +64,7 @@ function renderTable() {
   let filtered = allProjects.filter((p) => {
     const q = searchQuery.toLowerCase();
     const matchName = p.hospitalName?.toLowerCase().includes(q) ?? false;
-    const matchPerson =
-      !filterPerson ||
-      p.mainPerson === filterPerson ||
-      p.subPerson === filterPerson;
+    const matchPerson = !filterPerson || p.mainPerson === filterPerson || p.subPerson === filterPerson;
     const status = checkDelay(p);
     const normalizedStatus = status === "" ? "normal" : status;
     const matchStatus = !filterStatus || normalizedStatus === filterStatus;
@@ -98,10 +95,7 @@ function renderTable() {
     const live = new Date(p.goLiveDate);
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const daysUntilLive = p.goLiveDate
-      ? Math.ceil((live - today) / (1000 * 60 * 60 * 24))
-      : null;
-
+    const daysUntilLive = p.goLiveDate ? Math.ceil((live - today) / (1000 * 60 * 60 * 24)) : null;
     const liveFormatted = p.goLiveDate
       ? live.toLocaleDateString("ja-JP", { year: "numeric", month: "2-digit", day: "2-digit" })
       : "―";
@@ -109,9 +103,9 @@ function renderTable() {
     let daysText = "―";
     let daysCls = "";
     if (daysUntilLive !== null) {
-      if (daysUntilLive > 0) { daysText = `${daysUntilLive} 日`; }
+      if (daysUntilLive > 0)       { daysText = `${daysUntilLive} 日`; }
       else if (daysUntilLive === 0) { daysText = "本日"; daysCls = "days-today"; }
-      else { daysText = `+${Math.abs(daysUntilLive)} 日経過`; daysCls = "days-past"; }
+      else                          { daysText = `+${Math.abs(daysUntilLive)} 日経過`; daysCls = "days-past"; }
     }
 
     return `
@@ -149,6 +143,56 @@ function initFirestore() {
 }
 
 // =============================================
+// 詳細ポップアップ
+// =============================================
+function openDetailModal(id) {
+  const p = allProjects.find((x) => x.id === id);
+  if (!p) return;
+
+  document.getElementById("detailTitle").textContent = p.hospitalName || "施設詳細";
+
+  const rows = [
+    { label: "稼働日（予定含む）",              value: p.goLiveDate || "" },
+    { label: "施設名",                           value: p.hospitalName || "" },
+    { label: "メイン担当",                       value: p.mainPerson || "" },
+    { label: "経営主体",                         value: p.keieiShukai || "" },
+    { label: "許可病床数",                       value: p.kyokaBedNum || "" },
+    { label: "病棟構成",                         value: p.byokoKosei || "" },
+    { label: "導入病棟",                         value: p.donyuByoko || "" },
+    { label: "導入病床数",                       value: p.donyuBedNum || "" },
+    { label: "ベッドサイド端末（既存/新規台数）", value: p.bedsideTerminal || "" },
+    { label: "ステーション端末",              value: p.stationTerminal || "" },
+    { label: "眠りSCAN（既存/新規台数）",        value: p.nemiriScan || "" },
+    { label: "離床CATCH（既存/新規台数）",       value: p.rishoCatch || "" },
+    { label: "Wi-Fiベッドナビ（既存/新規台数）", value: p.wifiNav || "" },
+    { label: "タブレット設置位置",               value: p.tabletPos || "" },
+    { label: "電子カルテ（ベンダー/機種）",      value: p.electronicKarte || "" },
+    { label: "ナースコール（メーカー/機種）",    value: p.nurseCall || "" },
+    { label: "周辺連携機能",                     value: p.shuhenRenkei || "" },
+    { label: "スケジュール状況",                 value: p.scheduleStatus || "" },
+    { label: "備考",                             value: p.memo || "" },
+  ];
+
+  document.getElementById("detailBody").innerHTML = `
+    <table class="detail-table">
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <th>${escapeHtml(r.label)}</th>
+            <td>${r.value ? escapeHtml(r.value) : '<span style="color:#9aa5b4">未入力</span>'}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    </table>
+  `;
+  document.getElementById("detailModal").classList.add("open");
+}
+
+function closeDetailModal() {
+  document.getElementById("detailModal").classList.remove("open");
+}
+
+// =============================================
 // 検索・フィルタ
 // =============================================
 function initFilters() {
@@ -158,8 +202,7 @@ function initFilters() {
   });
 
   const staffSel = document.getElementById("staffFilter");
-  staffSel.innerHTML =
-    `<option value="">全員表示</option>` +
+  staffSel.innerHTML = `<option value="">全員表示</option>` +
     STAFF.map((s) => `<option value="${s}">${s}</option>`).join("");
   staffSel.addEventListener("change", (e) => {
     filterPerson = e.target.value;
@@ -173,64 +216,11 @@ function initFilters() {
 }
 
 // =============================================
-// 詳細ポップアップ
-// =============================================
-function openDetailModal(id) {
-  const p = allProjects.find((x) => x.id === id);
-  if (!p) return;
-
-  document.getElementById("detailTitle").textContent = p.hospitalName || "施設詳細";
-
-  const rows = [
-    { label: "稼働日（予定含む）", value: p.goLiveDate || "" },
-    { label: "施設名",             value: p.hospitalName || "" },
-    { label: "経営主体",           value: p.keieiShukai || "" },
-    { label: "許可病床数",         value: p.kyokaBedNum || "" },
-    { label: "病棟構成",           value: p.byokoKosei || "" },
-    { label: "導入病棟",           value: p.donyuByoko || "" },
-    { label: "導入病床数",         value: p.donyuBedNum || "" },
-    { label: "眠りSCAN（既存/新規台数）", value: p.nemiriScan || "" },
-    { label: "離床CATCH（既存/新規台数）", value: p.rishoCatch || "" },
-    { label: "タブレット設置位置", value: p.tabletPos || "" },
-    { label: "接続方法",           value: p.setsuzokuHoho || "" },
-    { label: "電子カルテ（ベンダー/機種）", value: p.electronicKarte || "" },
-    { label: "ナースコール（メーカー/機種）", value: p.nurseCall || "" },
-    { label: "周辺連携機能",       value: p.shuhenRenkei || "" },
-    { label: "PB/PT担当",          value: p.pbPt || "" },
-    { label: "スケジュール状況",   value: p.scheduleStatus || "" },
-    { label: "備考",               value: p.memo || "" },
-  ];
-
-  document.getElementById("detailBody").innerHTML = `
-    <table class="detail-table">
-      <tbody>
-        ${rows.map(r => `
-          <tr>
-            <th>${escapeHtml(r.label)}</th>
-            <td>${escapeHtml(r.value) || '<span style="color:#9aa5b4">未入力</span>'}</td>
-          </tr>
-        `).join("")}
-      </tbody>
-    </table>
-  `;
-
-  document.getElementById("detailModal").classList.add("open");
-}
-
-function closeDetailModal() {
-  document.getElementById("detailModal").classList.remove("open");
-}
-
-// =============================================
 // ユーティリティ
 // =============================================
 function escapeHtml(str) {
   if (!str) return "";
-  return str
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
 function showToast(msg, type = "success") {
