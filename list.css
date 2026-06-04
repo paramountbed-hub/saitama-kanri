@@ -4,8 +4,9 @@
 
 /* --- 戻るボタン --- */
 .btn-back {
-  background: rgba(255,255,255,.18);
-  color: var(--white);
+  background: var(--gray-100);
+  color: var(--blue-dark);
+  border: 1px solid var(--gray-200);
   text-decoration: none;
   border-radius: var(--radius-sm);
   padding: 5px 12px;
@@ -14,7 +15,7 @@
   transition: background .15s;
   white-space: nowrap;
 }
-.btn-back:hover { background: rgba(255,255,255,.32); }
+.btn-back:hover { background: var(--gray-200); }
 
 /* --- ステータスフィルタ追加分 --- */
 .badge-normal {

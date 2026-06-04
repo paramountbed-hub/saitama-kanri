@@ -43,13 +43,14 @@ body {
 
 /* --- ヘッダー --- */
 .app-header {
-  background: linear-gradient(135deg, var(--blue-dark) 0%, var(--blue) 100%);
-  color: var(--white);
+  background: var(--white);
+  color: var(--gray-800);
   padding: 0 20px;
   position: sticky;
   top: 0;
   z-index: 100;
-  box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  border-bottom: 2px solid var(--gray-200);
+  box-shadow: var(--shadow-sm);
 }
 
 .header-inner {
@@ -74,7 +75,8 @@ body {
 }
 
 .header-title .branch-tag {
-  background: rgba(255,255,255,.18);
+  background: var(--blue-light);
+  color: var(--blue-dark);
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 11px;
@@ -83,8 +85,8 @@ body {
 }
 
 .btn-add-main {
-  background: var(--white);
-  color: var(--blue);
+  background: var(--blue);
+  color: var(--white);
   border: none;
   border-radius: var(--radius-sm);
   padding: 8px 16px;
@@ -96,8 +98,15 @@ body {
   gap: 6px;
   transition: background .15s, transform .1s;
 }
-.btn-add-main:hover { background: var(--blue-light); transform: translateY(-1px); }
+.btn-add-main:hover { background: var(--blue-dark); transform: translateY(-1px); }
 .btn-add-main:active { transform: translateY(0); }
+
+/* ヘッダーロゴ */
+.header-logo {
+  height: 28px;
+  width: auto;
+  display: block;
+}
 
 /* フォームセクションタイトル */
 .form-section-title {
@@ -112,8 +121,9 @@ body {
 }
 
 .btn-list-view {
-  background: rgba(255,255,255,.18);
-  color: var(--white);
+  background: var(--gray-100);
+  color: var(--blue-dark);
+  border: 1px solid var(--gray-200);
   text-decoration: none;
   border-radius: var(--radius-sm);
   padding: 8px 14px;
@@ -122,7 +132,7 @@ body {
   transition: background .15s;
   white-space: nowrap;
 }
-.btn-list-view:hover { background: rgba(255,255,255,.32); }
+.btn-list-view:hover { background: var(--gray-200); }
 
 /* --- 工程一覧バー --- */
 .task-list-bar {
@@ -721,9 +731,9 @@ body {
 
 /* JSON読み込みボタン */
 .btn-import {
-  background: rgba(255,255,255,.18);
-  color: var(--white);
-  border: 1px solid rgba(255,255,255,.4);
+  background: var(--gray-100);
+  color: var(--blue-dark);
+  border: 1px solid var(--gray-200);
   border-radius: var(--radius-sm);
   padding: 8px 14px;
   font-size: 13px;
@@ -733,4 +743,4 @@ body {
   white-space: nowrap;
   font-family: var(--font);
 }
-.btn-import:hover { background: rgba(255,255,255,.32); }
+.btn-import:hover { background: var(--gray-200); }
