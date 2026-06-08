@@ -25,31 +25,31 @@ let allProjects = [];
 let searchQuery = "";
 let filterPerson = "";
 
-const PROJECT_JSON_FIELDS = [
-  ["hospitalName", "病院名"],
-  ["goLiveDate", "稼働予定日"],
-  ["newOrExisting", "新規・既存"],
-  ["smabe", "スマべ"],
-  ["mainPerson", "メイン担当"],
-  ["subPerson", "サブ担当"],
-  ["currentTask", "現在のタスク"],
-  ["keieiShukai", "経営主体"],
-  ["kyokaBedNum", "許可病床数"],
-  ["byokoKosei", "病床構成"],
-  ["donyuByoko", "導入病棟"],
-  ["donyuBedNum", "導入病床数"],
-  ["bedsideTerminal", "ベッドサイド端末"],
-  ["stationTerminal", "ステーション端末"],
-  ["nemiriScan", "眠りSCAN"],
-  ["rishoCatch", "離床CATCH"],
-  ["wifiNav", "Wi-Fiベッドナビ"],
-  ["tabletPos", "タブレット設置位置"],
-  ["electronicKarte", "電子カルテ"],
-  ["nurseCall", "ナースコール"],
-  ["shuhenRenkei", "周辺連携機器"],
-  ["ankenGaiyou", "案件概要"],
-  ["scheduleStatus", "スケジュール状況"],
-  ["memo", "備考"],
+const PROJECT_JSON_KEYS = [
+  "hospitalName",
+  "goLiveDate",
+  "newOrExisting",
+  "smabe",
+  "mainPerson",
+  "subPerson",
+  "currentTask",
+  "keieiShukai",
+  "kyokaBedNum",
+  "byokoKosei",
+  "donyuByoko",
+  "donyuBedNum",
+  "bedsideTerminal",
+  "stationTerminal",
+  "nemiriScan",
+  "rishoCatch",
+  "wifiNav",
+  "tabletPos",
+  "electronicKarte",
+  "nurseCall",
+  "shuhenRenkei",
+  "ankenGaiyou",
+  "scheduleStatus",
+  "memo",
 ];
 
 // =============================================
@@ -259,8 +259,6 @@ function openDetailModal(id) {
   const rows = [
     { label: "稼働日（予定含む）",              value: p.goLiveDate || "" },
     { label: "施設名",                           value: p.hospitalName || "" },
-    { label: "新規・既存",                       value: p.newOrExisting || "" },
-    { label: "スマべ",                           value: p.smabe || "" },
     { label: "メイン担当",                       value: p.mainPerson || "" },
     { label: "経営主体",                         value: p.keieiShukai || "" },
     { label: "許可病床数",                       value: p.kyokaBedNum || "" },
@@ -276,7 +274,6 @@ function openDetailModal(id) {
     { label: "電子カルテ（ベンダー/機種）",      value: p.electronicKarte || "" },
     { label: "ナースコール（メーカー/機種）",    value: p.nurseCall || "" },
     { label: "周辺連携機能",                     value: p.shuhenRenkei || "" },
-    { label: "案件概要",                         value: p.ankenGaiyou || "" },
     { label: "スケジュール状況",                 value: p.scheduleStatus || "" },
     { label: "備考",                             value: p.memo || "" },
   ];
@@ -319,8 +316,6 @@ function openEditModal(id) {
   document.getElementById("editProjectId").value = id;
   document.getElementById("formHospitalName").value  = project.hospitalName || "";
   document.getElementById("formGoLiveDate").value    = project.goLiveDate || "";
-  document.getElementById("formNewOrExisting").value = project.newOrExisting || "";
-  document.getElementById("formSmabe").value         = project.smabe || "";
   document.getElementById("formCurrentTask").value   = project.currentTask ?? 0;
   document.getElementById("formMemo").value          = project.memo || "";
   // 施設情報
@@ -342,7 +337,6 @@ function openEditModal(id) {
   document.getElementById("formShuhenRenkei").value  = project.shuhenRenkei || "";
   // スケジュール
   document.getElementById("formScheduleStatus").value = project.scheduleStatus || "";
-  document.getElementById("formAnkenGaiyou").value  = project.ankenGaiyou || "";
 
   populateStaffSelects();
   document.getElementById("formMainPerson").value = project.mainPerson || "";
@@ -368,8 +362,6 @@ async function saveProject(e) {
   const data = {
     hospitalName:  document.getElementById("formHospitalName").value.trim(),
     goLiveDate:    document.getElementById("formGoLiveDate").value,
-    newOrExisting: document.getElementById("formNewOrExisting").value.trim(),
-    smabe:         document.getElementById("formSmabe").value.trim(),
     mainPerson:    document.getElementById("formMainPerson").value,
     subPerson:     document.getElementById("formSubPerson").value,
     memo:          document.getElementById("formMemo").value.trim(),
@@ -393,7 +385,6 @@ async function saveProject(e) {
     shuhenRenkei:  document.getElementById("formShuhenRenkei").value.trim(),
     // スケジュール
     scheduleStatus: document.getElementById("formScheduleStatus").value.trim(),
-    ankenGaiyou:   document.getElementById("formAnkenGaiyou").value.trim(),
   };
 
   if (!data.hospitalName) {
@@ -520,7 +511,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // =============================================
 function normalizeProjectForJson(project) {
   const data = {};
-  PROJECT_JSON_FIELDS.forEach(([key]) => {
+  PROJECT_JSON_KEYS.forEach((key) => {
     if (key === "currentTask") {
       data[key] = project.currentTask !== undefined ? project.currentTask : 0;
     } else {
@@ -530,26 +521,39 @@ function normalizeProjectForJson(project) {
   return data;
 }
 
-function exportProjectsJson() {
-  if (!allProjects.length) {
-    showToast("取り出すカード情報がありません", "error");
-    return;
+async function getProjectsForExport() {
+  if (allProjects.length > 0) return allProjects;
+
+  const snapshot = await db.collection("projects").orderBy("goLiveDate", "asc").get();
+  return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+}
+
+async function exportProjectsJson() {
+  try {
+    const sourceProjects = await getProjectsForExport();
+    if (!sourceProjects.length) {
+      alert("JSONに取り出すカード情報がありません。");
+      return;
+    }
+
+    const projects = sourceProjects.map(normalizeProjectForJson);
+    const json = JSON.stringify(projects, null, 2);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+
+    link.href = url;
+    link.download = `saitama-projects-${date}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    showToast(`${projects.length}件のカード情報をJSONで取り出しました`);
+  } catch (err) {
+    console.error("JSON export failed:", err);
+    alert("JSON取り出しに失敗しました。Firebase設定または通信状態を確認してください。");
   }
-
-  const projects = allProjects.map(normalizeProjectForJson);
-  const json = JSON.stringify(projects, null, 2);
-  const blob = new Blob([json], { type: "application/json;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-
-  a.href = url;
-  a.download = `saitama-projects-${date}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-  showToast(`${projects.length}件のカード情報をJSONで取り出しました`);
 }
 
 async function importJsonFile(event) {
