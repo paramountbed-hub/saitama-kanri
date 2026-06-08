@@ -23,6 +23,7 @@
         <a href="list.html" class="btn-list-view">📊 一覧表示</a>
         <button class="btn-import" onclick="document.getElementById('jsonFileInput').click()">📥 JSON読み込み</button>
         <input type="file" id="jsonFileInput" accept=".json,.txt" style="display:none" onchange="importJsonFile(event)" />
+        <button class="btn-import" onclick="exportProjectsJson()">JSON取り出し</button>
         <button class="btn-add-main" onclick="openAddModal()">＋ 新規案件登録</button>
       </div>
     </div>
@@ -103,6 +104,10 @@
       <form id="projectForm">
         <div class="modal-body">
           <input type="hidden" id="editProjectId" />
+          <div class="form-group">
+            <label class="form-label" for="formAnkenGaiyou">案件概要</label>
+            <input type="text" id="formAnkenGaiyou" class="form-input" placeholder="例：購入" />
+          </div>
 
           <!-- 基本情報 -->
           <div class="form-section-title">基本情報</div>
@@ -113,6 +118,14 @@
           <div class="form-group">
             <label class="form-label" for="formGoLiveDate">稼働予定日</label>
             <input type="date" id="formGoLiveDate" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formNewOrExisting">新規・既存</label>
+            <input type="text" id="formNewOrExisting" class="form-input" placeholder="例：新規" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="formSmabe">スマべ</label>
+            <input type="text" id="formSmabe" class="form-input" placeholder="例：スマべ" />
           </div>
           <div class="form-group">
             <label class="form-label" for="formMainPerson">メイン担当</label>
